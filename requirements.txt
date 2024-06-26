@@ -1,0 +1,3 @@
+
+spidev==3.5
+wiringpi==2.60.1
