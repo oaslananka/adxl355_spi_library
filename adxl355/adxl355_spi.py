@@ -59,6 +59,9 @@ class Adxl355:
         self.transfer = self.spi.xfer2
         self.set_range(range_g)
         self.set_filter(odr, hpfc)
+        
+        # Store current ODR for timing calculations
+        self.current_odr = odr
         self.wait_for_data_ready()
 
         self.factor = (range_g * 2) / 2**20
@@ -135,6 +138,7 @@ class Adxl355:
         self.stop()
         self.write_register(
             REG_FILTER, (HPFC_TO_BIT[hpfc] << 4) | ODR_TO_BIT[odr])
+        self.current_odr = odr  # Store current ODR for timing
         self.start()
 
     def get_x_raw(self):
@@ -220,3 +224,15 @@ class Adxl355:
             float: The Z-axis acceleration value.
         """
         return float(self.get_z_raw()) * self.factor
+
+    def start(self):
+        """
+        Starts the ADXL355 accelerometer by setting the measurement mode.
+        """
+        self.write_register(REG_POWER_CTL, 0x00)  # Measurement mode
+
+    def stop(self):
+        """
+        Stops the ADXL355 accelerometer by setting standby mode.
+        """
+        self.write_register(REG_POWER_CTL, 0x01)  # Standby mode
